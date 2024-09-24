@@ -17,7 +17,10 @@ int main(int argc, char** argv)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	GLFWwindow* window = glfwCreateWindow(640, 360, "Raytracer", NULL, NULL);
+	windowWidth = 640 * 2;
+	windowHeight = 360 * 2;
+	GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Raytracer", NULL, NULL);
+	//GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Raytracer", glfwGetPrimaryMonitor(), NULL);
 	if (!window)
 	{
 		std::cerr << "Failed to create GLFW window" << std::endl;
@@ -25,8 +28,10 @@ int main(int argc, char** argv)
 		return -1;
 	}
 	glfwMakeContextCurrent(window);
+	glfwSwapInterval(1);
 	glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
 	glfwSetCursorPosCallback(window, MouseCallback);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// glad: load all OpenGL function pointers
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))

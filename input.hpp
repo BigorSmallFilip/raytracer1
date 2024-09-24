@@ -2,6 +2,9 @@
 
 #include <stdint.h>
 
+extern int windowWidth;
+extern int windowHeight;
+
 extern float deltaTime;
 extern float lastFrame;
 

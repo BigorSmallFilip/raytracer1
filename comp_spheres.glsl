@@ -36,70 +36,10 @@ struct Sphere {
 	vec4 albedoSpecular;
 };
 
-struct Triangle {
-	vec3 posA, posB, posC;
-	vec3 normA, normB, normC;
-};
-
-struct TriangleHitInfo {
-	bool hit;
-	float dist;
-	vec3 pos;
-	vec3 normal;
-	int triIndex;
-};
-
-struct RayTracingMaterial {
-	vec4 albedoSpecular;
-	int flag;
-};
-
-struct Model {
-	int nodeOffset;
-	int triOffset;
-	mat4 worldToLocalMatrix;
-    mat4 localToWorldMatrix;
-	RayTracingMaterial material;
-};
-
-struct BVHNode {
-	vec3 boundsMin;
-	vec3 boundsMax;
-	// index refers to triangles if is leaf node (triangleCount > 0)
-	// otherwise it is the index of the first child node
-	int startIndex;
-	int triangleCount;
-};
-
-struct ModelHitInfo {
-	bool hit;
-	vec3 normal;
-	vec3 pos;
-	float dst;
-	RayTracingMaterial material;
-};
-
-
-
-layout(binding = 4, std430) readonly buffer sphere_buffer {
+layout(binding = 4, std430) readonly buffer ssbo {
     int sphereCount;
     Sphere spheres[];
 };
-
-layout(binding = 5, std430) readonly buffer model_buffer {
-    int modelCount;
-    Model models[];
-};
-layout(binding = 6, std430) readonly buffer triangle_buffer {
-    int triangleCount;
-    Triangle triangles[];
-};
-layout(binding = 7, std430) readonly buffer node_buffer {
-    int nodesCount;
-    BVHNode nodes[];
-};
-
-
 
 
 

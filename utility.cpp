@@ -1,5 +1,7 @@
 #include "utility.hpp"
 
+#include <stdlib.h>
+
 
 
 std::string ReadShaderFile(const char* filepath)
@@ -97,6 +99,10 @@ void SetUniform(GLuint program, const char* const name, float value)
 {
 	glUniform1f(glGetUniformLocation(program, name), value);
 }
+void SetUniform(GLuint program, const char* const name, const glm::vec2& vec)
+{
+	glUniform2fv(glGetUniformLocation(program, name), 1, &vec[0]);
+}
 void SetUniform(GLuint program, const char* const name, const glm::mat4& mat)
 {
 	glUniformMatrix4fv(glGetUniformLocation(program, name), 1, GL_FALSE, &mat[0][0]);
@@ -131,4 +137,13 @@ void RenderQuad()
 	glBindVertexArray(quadVAO);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindVertexArray(0);
+}
+
+
+
+float RandomRange(float min, float max)
+{
+	int r = rand() % 10000;
+	float rf = (float)r / 10000.0f;
+	return min + (max - min) * rf;
 }

@@ -33,6 +33,12 @@
     <ClCompile Include="utility.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="buffer.cpp">
+      <Filter>Source Files\Program</Filter>
+    </ClCompile>
+    <ClCompile Include="bvh.cpp">
+      <Filter>Source Files\Program</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="input.hpp">
@@ -44,6 +50,12 @@
     <ClInclude Include="utility.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="buffer.hpp">
+      <Filter>Source Files\Program</Filter>
+    </ClInclude>
+    <ClInclude Include="bvh.hpp">
+      <Filter>Source Files\Program</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="comp.glsl">
@@ -53,6 +65,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="vert.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="comp_spheres.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cube.OBJ_MODEL_DAMN_IT">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

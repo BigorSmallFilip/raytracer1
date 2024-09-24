@@ -21,7 +21,9 @@ GLuint CreateProgram(GLuint shader0, GLuint shader1);
 
 void SetUniform(GLuint program, const char* const name, int value);
 void SetUniform(GLuint program, const char* const name, float value);
+void SetUniform(GLuint program, const char* const name, const glm::vec2& vec);
 void SetUniform(GLuint program, const char* const name, const glm::mat4& mat);
 
 void RenderQuad();
 
+float RandomRange(float min, float max);
