@@ -21,6 +21,20 @@ void CreateBuffer(const char* const name, int binding, size_t datasize, void* da
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, buffer);
 }
 
+void CreateBufferAndCount(const char* const name, int binding, size_t datasize, void* data)
+{
+	GLuint buffer;
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, datasize + 16, NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, 4, &datasize);
+	glBufferSubData(GL_SHADER_STORAGE_BUFFER, 16, datasize, data);
+
+	int block_index = glGetProgramResourceIndex(rayTraceProgram, GL_SHADER_STORAGE_BLOCK, name);
+	glShaderStorageBlockBinding(rayTraceProgram, block_index, binding);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, buffer);
+}
+
 
 
 void InitSphereData()

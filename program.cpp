@@ -1,6 +1,9 @@
 #include "program.hpp"
 
 #include <iostream>
+#include <iomanip>
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 #include "utility.hpp"
 #include "input.hpp"
@@ -75,7 +78,9 @@ public:
 		constexpr float sensitivityY = 0.005f;
 		m_rotation.y += (float)mouseDeltaX * sensitivityX;
 		m_rotation.x += (float)mouseDeltaY * sensitivityY;
-
+		if (m_rotation.x < -M_PI / 2) m_rotation.x = -M_PI / 2;
+		else if (m_rotation.x > M_PI / 2) m_rotation.x = M_PI / 2;
+		
 		glm::vec4 right   = glm::vec4(1, 0, 0, 1);
 		glm::vec4 up      = glm::vec4(0, 1, 0, 1);
 		glm::vec4 forward = glm::vec4(0, 0, 1, 1);
@@ -144,18 +149,18 @@ bool ProgramInit()
 	return true;
 }
 
+
+
+
+
 int frameCount = 0;
 float combinedTime = 0;
-#define FPS_CHECKO 6
+#define FPS_CHECKO 10
 
 void ProgramLoop()
 {
-	combinedTime += deltaTime;
-	if ((frameCount & ((1 << FPS_CHECKO) - 1)) == 0)
-	{
-		std::cout << "FPS = " << 1.0f / (combinedTime / (float)(1 << FPS_CHECKO)) << "\n";
-		combinedTime = 0;
-	}
+	double perf_raytrace = 0.0;
+	double perf_lighting = 0.0;
 
 	g_camera.m_fovDegrees = 100.0f;
 	
@@ -176,7 +181,9 @@ void ProgramLoop()
 	std::cout << "THE VECTOR IS EQUAL TO " << "{ " << testo2.x << ", " << testo2.y << ", " << testo2.z << ", " << testo2.w << " }" << "\n";*/
 
         glUseProgram(rayTraceProgram);
+	perf_raytrace = glfwGetTime();
         glDispatchCompute((GLuint)renderWidth / 32, (GLuint)renderHeight / 30, 1);
+	perf_raytrace = glfwGetTime() - perf_raytrace;
 
         // make sure writing to image has finished before read
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
@@ -184,7 +191,24 @@ void ProgramLoop()
         // render image to quad
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(screenQuadProgram);
+	perf_lighting = glfwGetTime();
         RenderQuad();
+	perf_lighting = glfwGetTime() - perf_lighting;
+
+	
+
+	combinedTime += deltaTime;
+	if ((frameCount & ((1 << FPS_CHECKO) - 1)) == 0)
+	{
+		std::cout << std::setfill('0') << std::setw(4)
+			<< std::fixed << std::setprecision(4);
+		std::cout << "FPS =  " << 1.0f / (combinedTime / (float)(1 << FPS_CHECKO)) << "\t";
+		std::cout << "Raytracing time: " << perf_raytrace * 1000 << "ms\t";
+		std::cout << "Lighting time: " << perf_lighting * 1000 << "ms\n";
+		combinedTime = 0;
+	}
+
+
 
 	frameCount++;
 }

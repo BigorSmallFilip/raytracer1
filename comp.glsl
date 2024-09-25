@@ -4,6 +4,7 @@
 
 const float INFINITY = 1.0 / 0.0;
 const float PI = 3.14159265359;
+const float EPSILON = 0.000001;
 
 
 
@@ -37,7 +38,7 @@ struct Sphere {
 };
 
 struct Triangle {
-	vec3 posA, posB, posC;
+	vec3 vertA, vertB, vertC;
 	vec3 normA, normB, normC;
 };
 
@@ -122,8 +123,6 @@ Ray create_camera_ray(vec2 uv) {
     return create_ray(pos, dir);
 }
 
-
-
 RayHit create_ray_hit() {
     RayHit hit;
     hit.hit = false;
@@ -156,6 +155,32 @@ void ray_sphere_intersection(Ray ray, inout RayHit bestHit, Sphere sphere) {
     }
 }
 
+TriangleHitInfo ray_triangle_intersection(Ray ray, Triangle tri)
+{
+	vec3 edgeAB = tri.vertB - tri.vertA;
+	vec3 edgeAC = tri.vertC - tri.vertA;
+	vec3 normalVector = cross(edgeAB, edgeAC);
+	vec3 ao = ray.pos - tri.vertA;
+	vec3 dao = cross(ao, ray.dir);
+
+	float det = -dot(ray.dir, normalVector);
+	float invDet = 1.0 / det;
+
+	// Calculate dist to triangle & barycentric coordinates of intersection point
+	float dist = dot(ao, normalVector) * invDet;
+	float u = dot(edgeAC, dao) * invDet;
+	float v = -dot(edgeAB, dao) * invDet;
+	float w = 1 - u - v;
+
+	// Initialize hit info
+	TriangleHitInfo hitInfo;
+	hitInfo.hit = det >= EPSILON && dist >= 0 && u >= 0 && v >= 0 && w >= 0;
+	hitInfo.pos = ray.pos + ray.dir * dist;
+	hitInfo.normal = normalize(tri.normA * w + tri.normB * u + tri.normC * v);
+	hitInfo.dist = dist;
+	return hitInfo;
+}
+
 
 
 RayHit trace(Ray ray) {
@@ -166,6 +191,18 @@ RayHit trace(Ray ray) {
         Sphere sphere = spheres[i];
         ray_sphere_intersection(ray, bestHit, sphere);
     }
+
+	/*for (int i = 0; i < triangleCount; i++) {
+		Triangle tri = triangles[i];
+		TriangleHitInfo hitInfo = ray_triangle_intersection(ray, tri);
+		if (hitInfo.dist < bestHit.dist) {
+			bestHit.hit = true;
+			bestHit.pos = hitInfo.pos;
+			bestHit.dist = hitInfo.dist;
+			bestHit.normal = hitInfo.normal;
+			bestHit.albedoSpecular = vec4(1, 1, 1, 1);
+		}
+	}*/
     
     return bestHit;
 }
@@ -188,7 +225,7 @@ void main() {
 	float depth = rayhit.dist;
 
     //albedo = vec3(0);
-    //albedo = spheres[0].position;
+    //albedo = vec3(triangleCount);
 
 	imageStore(gAlbedoSpecular, texelCoord, vec4(albedo, specular));
 	imageStore(gPosition, texelCoord, vec4(position, 0));

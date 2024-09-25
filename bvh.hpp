@@ -9,8 +9,8 @@ struct float3
 
 struct Triangle
 {
-	float3 vertA, vertB, vertC;
-	float3 normA, normB, normC;
+	float3 vertA, vertB, vertC; float padding0;
+	float3 normA, normB, normC; float padding1;
 };
 
 struct Model

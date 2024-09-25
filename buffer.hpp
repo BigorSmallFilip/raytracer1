@@ -4,6 +4,8 @@
 
 void CreateBuffer(const char* const name, int binding, size_t datasize, void* data);
 
+void CreateBufferAndCount(const char* const name, int binding, size_t datasize, void* data);
+
 
 
 struct Sphere

@@ -30,14 +30,18 @@ static bool loadOBJ(
 		return false;
 	}
 
+	int linenum = 0;
 	while (1)
 	{
+		linenum++;
 
 		char lineHeader[128];
 		// read the first word of the line
 		int res = fscanf(file, "%s", lineHeader);
 		if (res == EOF)
 			break; // EOF = End Of File. Quit the loop.
+
+		std::cout << "Reading line " << linenum << " starting with " << lineHeader[0] << "\n";
 
 		// else : parse lineHeader
 		if (strcmp(lineHeader, "v") == 0)
@@ -125,10 +129,14 @@ Model LoadModel(const char* const filepath)
 bool BuildAndDoEverythingElseWithBVH()
 {
 	Model testo = LoadModel("cube.OBJ_MODEL_DAMN_IT");
+	
+	//CreateBuffer("model_buffer", 5, 0, 0);
 
-	CreateBuffer("model_buffer", 5, 0, 0);
-	CreateBuffer("triangle_buffer", 6, 0, 0);
-	CreateBuffer("node_buffer", 7, 0, 0);
+	exit(0);
+
+	CreateBufferAndCount("triangle_buffer", 6, sizeof(Triangle) * testo.triangles.size(), (void*)testo.triangles.data());
+
+	//CreateBuffer("node_buffer", 7, 0, 0);
 
 	//std::cout << "glGetError() = " << glGetError() << "\n";
 
