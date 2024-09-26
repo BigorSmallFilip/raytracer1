@@ -145,7 +145,7 @@ bool ProgramInit()
 	int maxWorkGroups = 0;
 	glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &maxWorkGroups);
 	std::cout << "glGet() = " << maxWorkGroups << "\n";
-	
+
 	return true;
 }
 

@@ -41,19 +41,19 @@ void InitSphereData()
 {
 	struct
 	{
-		int sphereCount = 20;
+		int sphereCount = 100;
 		int PADDING0;
 		int PADDING1;
 		int PADDING2;
-		Sphere spheres[20] = { 0 };
+		Sphere spheres[100] = { 0 };
 	} ssbo_bufferdata;
 
-	for (int i = 0; i < 20; i++)
+	for (int i = 0; i < 100; i++)
 	{
 		ssbo_bufferdata.spheres[i] = {
-			RandomRange(-10, 10),
-			RandomRange(-10, 10),
-			RandomRange(-10, 10),
+			RandomRange(-40, 40),
+			RandomRange(-40, 40),
+			RandomRange(-40, 40),
 			RandomRange(0.5f, 2.0f),
 			RandomRange(0, 1),
 			RandomRange(0, 1),
