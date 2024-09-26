@@ -128,8 +128,10 @@ bool ProgramInit()
 	
 	// Create the G-BUFFER oh yes
 
-	renderWidth = windowWidth;
-	renderHeight = windowHeight;
+	//renderWidth = windowWidth;
+	//renderHeight = windowHeight;
+	renderWidth = 1920;
+	renderHeight = 1080;
 	CreateTexture(gAlbedoSpecular, 0, GL_RGBA32F, GL_RGBA, GL_FLOAT);
 	CreateTexture(gPosition, 1, GL_RGBA32F, GL_RGBA, GL_FLOAT);
 	CreateTexture(gNormal, 2, GL_RGBA32F, GL_RGBA, GL_FLOAT);
@@ -155,7 +157,7 @@ bool ProgramInit()
 
 int frameCount = 0;
 float combinedTime = 0;
-#define FPS_CHECKO 10
+#define FPS_CHECKO 6
 
 void ProgramLoop()
 {

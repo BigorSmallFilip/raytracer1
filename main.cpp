@@ -10,6 +10,10 @@
 
 
 
+#define FULLSCREEN false
+
+
+
 int main(int argc, char** argv)
 {
 	glfwInit();
@@ -17,10 +21,20 @@ int main(int argc, char** argv)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	windowWidth = 640 * 2;
-	windowHeight = 360 * 2;
-	GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Raytracer", NULL, NULL);
-	//GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Raytracer", glfwGetPrimaryMonitor(), NULL);
+	GLFWwindow* window = nullptr;
+	if (!FULLSCREEN)
+	{
+		windowWidth = 640 * 2;
+		windowHeight = 360 * 2;
+		window = glfwCreateWindow(windowWidth, windowHeight, "Raytracer", NULL, NULL);
+	}
+	else
+	{
+		windowWidth = 1920;
+		windowHeight = 1080;
+		window = glfwCreateWindow(windowWidth, windowHeight, "Raytracer", glfwGetPrimaryMonitor(), NULL);
+		glfwSwapInterval(1);
+	}
 	if (!window)
 	{
 		std::cerr << "Failed to create GLFW window" << std::endl;
