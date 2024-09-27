@@ -2,9 +2,9 @@
 
 
 
-void CreateBuffer(const char* const name, int binding, size_t datasize, void* data);
+void CreateBuffer(const char* const name, int binding, int datasize, void* data);
 
-void CreateBufferAndCount(const char* const name, int binding, size_t datasize, void* data);
+void CreateBufferAndCount(const char* const name, int binding, int numelements, int datasize, void* data);
 
 
 

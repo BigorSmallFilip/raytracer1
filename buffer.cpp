@@ -9,7 +9,7 @@
 
 
 
-void CreateBuffer(const char* const name, int binding, size_t datasize, void* data)
+void CreateBuffer(const char* const name, int binding, int datasize, void* data)
 {
 	GLuint buffer;
 	glGenBuffers(1, &buffer);
@@ -21,18 +21,24 @@ void CreateBuffer(const char* const name, int binding, size_t datasize, void* da
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, buffer);
 }
 
-void CreateBufferAndCount(const char* const name, int binding, size_t datasize, void* data)
+void CreateBufferAndCount(const char* const name, int binding, int numelements, int datasize, void* data)
 {
 	GLuint buffer;
 	glGenBuffers(1, &buffer);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer);
 	glBufferData(GL_SHADER_STORAGE_BUFFER, datasize + 16, NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, 4, &datasize);
-	glBufferSubData(GL_SHADER_STORAGE_BUFFER, 16, datasize, data);
+
+	void* ptr = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY);
+	// now copy data into memory
+	memcpy(ptr, &numelements, sizeof(int));
+	memcpy((void*)((size_t)ptr + 16), data, datasize);
+	// make sure to tell OpenGL we're done with the pointer
+	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 
 	int block_index = glGetProgramResourceIndex(rayTraceProgram, GL_SHADER_STORAGE_BLOCK, name);
 	glShaderStorageBlockBinding(rayTraceProgram, block_index, binding);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, buffer);
+
 }
 
 

@@ -70,8 +70,16 @@
     <None Include="comp_spheres.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="cube.OBJ_MODEL_DAMN_IT">
+    <None Include="cube.OBJ_MODEL">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="test.OBJ_MODEL">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="bits.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

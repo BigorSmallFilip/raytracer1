@@ -165,9 +165,13 @@
   <ItemGroup>
     <None Include="comp.glsl" />
     <None Include="comp_spheres.glsl" />
-    <None Include="cube.OBJ_MODEL_DAMN_IT" />
+    <None Include="cube.OBJ_MODEL" />
     <None Include="frag.glsl" />
+    <None Include="test.OBJ_MODEL" />
     <None Include="vert.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="bits.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

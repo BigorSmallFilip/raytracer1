@@ -19,6 +19,8 @@ void main() {
 
     vec3 color = vec3(0);
     color = albedo * dot(normal, vec3(0.707, 0.707, 0));
+    //color = albedo / ((depth * depth) / 5);
+    //color = albedo;
 
     FragColor = vec4(color, 0);
 }

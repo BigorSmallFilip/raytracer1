@@ -1,0 +1,52 @@
+X = vertexABC x position 16-bit * 3
+y = vertexABC y position 16-bit * 3
+z = vertexABC z position 16-bit * 3
+n = normalABC            8-bit  * 9
+
+XXXXXXXXXXXXXXXXYYYYYYYYYYYYYYYY
+XXXXXXXXXXXXXXXXYYYYYYYYYYYYYYYY
+XXXXXXXXXXXXXXXXYYYYYYYYYYYYYYYY
+ZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzz
+ZZZZZZZZZZZZZZZZnnnnnnnnNNNNNNNN
+nnnnnnnnNNNNNNNNnnnnnnnnNNNNNNNN
+nnnnnnnnNNNNNNNNnnnnnnnntttttttt
+aaaaaaaabbbbbbbbccccccccTTTTTTTT
+
+UUUUUUUUUUUUUUUUVVVVVVVVVVVVVVVV
+UUUUUUUUUUUUUUUUVVVVVVVVVVVVVVVV
+UUUUUUUUUUUUUUUUVVVVVVVVVVVVVVVV
+TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+
+struct TerrainTriangle {
+	unsigned int Ax_Ay;
+	unsigned int Bx_By;
+	unsigned int Cx_Cy;
+	unsigned int Az_Bz;
+	unsigned int Cz_Anx_Any;
+	unsigned int Anz_Bnx_Bny_Bnz;
+	unsigned int Cnx_Cny_Cnz_id1;
+	unsigned int At_Bt_Ct_id2;
+};
+
+TerrainTriangle tri;
+short vertAx = (tri.Ax_Ay & 0x0000FFFF) >> 0;
+short vertAy = (tri.Ax_Ay & 0xFFFF0000) >> 16;
+short vertBx = (tri.Bx_By & 0x0000FFFF) >> 0;
+short vertBy = (tri.Bx_By & 0xFFFF0000) >> 16;
+short vertCx = (tri.Cx_Cy & 0x0000FFFF) >> 0;
+short vertCy = (tri.Cx_Cy & 0xFFFF0000) >> 16;
+short vertAz = (tri.Az_Bz & 0x0000FFFF) >> 0;
+short vertBz = (tri.Az_Bz & 0xFFFF0000) >> 16;
+short vertCz = (tri.Cz_Anx_Any & 0x0000FFFF) >> 0;
+
+unsigned int normalAx = (tri.Cz_Anx_Any & 0x00FF0000) >> 16;
+unsigned int normalAy = (tri.Cz_Anx_Any & 0xFF000000) >> 24;
+unsigned int normalAz = (tri.Anz_Bnx_Bny_Bnz & 0x000000FF) >> 0;
+unsigned int normalBx = (tri.Anz_Bnx_Bny_Bnz & 0x0000FF00) >> 8;
+unsigned int normalBy = (tri.Anz_Bnx_Bny_Bnz & 0x00FF0000) >> 16;
+unsigned int normalBz = (tri.Anz_Bnx_Bny_Bnz & 0xFF000000) >> 24;
+unsigned int normalCx = (tri.Cnx_Cny_Cnz_id1 & 0x000000FF) >> 0;
+unsigned int normalCy = (tri.Cnx_Cny_Cnz_id1 & 0x0000FF00) >> 8;
+unsigned int normalCz = (tri.Cnx_Cny_Cnz_id1 & 0x00FF0000) >> 16;
+
+int textureId1 = (tri.Cnx_Cny_Cnz_id1 & 0xFF000000) >> 24;

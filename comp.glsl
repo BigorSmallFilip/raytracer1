@@ -37,17 +37,16 @@ struct Sphere {
 	vec4 albedoSpecular;
 };
 
+struct Capsule {
+    vec3 posa;
+    vec3 posb;
+    float radius;
+    vec4 albedoSpecular;
+};
+
 struct Triangle {
 	vec3 vertA, vertB, vertC;
 	vec3 normA, normB, normC;
-};
-
-struct TriangleHitInfo {
-	bool hit;
-	float dist;
-	vec3 pos;
-	vec3 normal;
-	int triIndex;
 };
 
 struct RayTracingMaterial {
@@ -99,6 +98,15 @@ layout(binding = 7, std430) readonly buffer node_buffer {
     int nodesCount;
     BVHNode nodes[];
 };
+
+
+
+/*const int triangleCount = 2;
+const Triangle triangles[2] = {
+    { vec3(0, -5, 0), vec3(0, 0, 5), vec3(-5, -5, 0) , vec3(0, 1, 0), vec3(0, 1, 0), vec3(0, 1, 0) },
+    { vec3(0, 0, 0), vec3(0, 0, 5), vec3(5, 0, 0) , vec3(0, 1, 0), vec3(0, 1, 0), vec3(0, 1, 0) },
+};*/
+
 
 
 
@@ -155,7 +163,63 @@ void ray_sphere_intersection(Ray ray, inout RayHit bestHit, Sphere sphere) {
     }
 }
 
-TriangleHitInfo ray_triangle_intersection(Ray ray, Triangle tri)
+float ray_capsule_intersection_dist(Ray ray, Capsule capsule)
+{
+    vec3 ba = capsule.posb - capsule.posa;
+    vec3 oa = ray.pos - capsule.posa;
+
+    float baba = dot(ba,ba);
+    float bard = dot(ba,ray.dir);
+    float baoa = dot(ba,oa);
+    float rdoa = dot(ray.dir,oa);
+    float oaoa = dot(oa,oa);
+
+    float a = baba      - bard*bard;
+    float b = baba*rdoa - baoa*bard;
+    float c = baba*oaoa - baoa*baoa - capsule.radius*capsule.radius*baba;
+    float h = b*b - a*c;
+    if (h >= 0.0)
+    {
+        float t = (-b - sqrt(h)) / a;
+        float y = baoa + t * bard;
+        // body
+        if (y > 0.0 && y < baba) return t;
+        // caps
+        vec3 oc = (y <= 0.0) ? oa : ray.pos - capsule.posb;
+        b = dot(ray.dir, oc);
+        c = dot(oc, oc) - capsule.radius * capsule.radius;
+        h = b*b - c;
+        if (h > 0.0) return -b - sqrt(h);
+    }
+    return INFINITY;
+}
+
+// compute normal
+vec3 ray_capsule_intersection_normal(vec3 pos, Capsule capsule)
+{
+    vec3  ba = capsule.posb - capsule.posa;
+    vec3  pa = pos - capsule.posa;
+    float h = clamp(dot(pa,ba)/dot(ba,ba),0.0,1.0);
+    return (pa - h*ba)/capsule.radius;
+}
+
+RayHit ray_capsule_intersection(Ray ray, Capsule capsule)
+{
+    RayHit hit = create_ray_hit();
+
+    float dist = ray_capsule_intersection_dist(ray, capsule);
+    if (dist < INFINITY) {
+        hit.hit = true;
+        hit.pos = ray.pos + ray.dir * dist;
+        hit.normal = ray_capsule_intersection_normal(hit.pos, capsule);
+        hit.dist = dist;
+        hit.albedoSpecular = capsule.albedoSpecular;
+    }
+
+    return hit;
+}
+
+/*TriangleHitInfo ray_triangle_intersection2(Ray ray, Triangle tri)
 {
 	vec3 edgeAB = tri.vertB - tri.vertA;
 	vec3 edgeAC = tri.vertC - tri.vertA;
@@ -179,8 +243,51 @@ TriangleHitInfo ray_triangle_intersection(Ray ray, Triangle tri)
 	hitInfo.normal = normalize(tri.normA * w + tri.normB * u + tri.normC * v);
 	hitInfo.dist = dist;
 	return hitInfo;
-}
+}*/
 
+
+RayHit ray_triangle_intersection(Ray ray, Triangle tri)
+{
+    RayHit hitInfo = create_ray_hit();
+
+    vec3 edge1 = tri.vertB - tri.vertA;
+    vec3 edge2 = tri.vertC - tri.vertA;
+    vec3 ray_cross_e2 = cross(ray.dir, edge2);
+    float det = dot(edge1, ray_cross_e2);
+
+    if (det > -EPSILON && det < EPSILON)
+        return hitInfo;    // This ray is parallel to this triangle.
+
+    float inv_det = 1.0 / det;
+    vec3 s = ray.pos - tri.vertA;
+    float u = inv_det * dot(s, ray_cross_e2);
+
+    if (u < 0 || u > 1)
+        return hitInfo;
+
+    vec3 s_cross_e1 = cross(s, edge1);
+    float v = inv_det * dot(ray.dir, s_cross_e1);
+
+    if (v < 0 || u + v > 1)
+        return hitInfo;
+
+    // At this stage we can compute t to find out where the intersection point is on the line.
+    float t = inv_det * dot(edge2, s_cross_e1);
+
+    if (t > EPSILON) // ray intersection
+    {
+        hitInfo.hit = true;
+	    hitInfo.pos = ray.pos + ray.dir * t;
+		float w = 1 - u - v;
+	    hitInfo.normal = normalize(tri.normA * w + tri.normB * u + tri.normC * v);
+	    hitInfo.dist = t;
+
+
+        return hitInfo;
+    }
+    else // This means that there is a line intersection but not a ray intersection.
+        return hitInfo;
+}
 
 
 RayHit trace(Ray ray) {
@@ -192,18 +299,28 @@ RayHit trace(Ray ray) {
         ray_sphere_intersection(ray, bestHit, sphere);
     }
 
-	/*for (int i = 0; i < triangleCount; i++) {
+	for (int i = 0; i < triangleCount; i++) {
 		Triangle tri = triangles[i];
-		TriangleHitInfo hitInfo = ray_triangle_intersection(ray, tri);
+		RayHit hitInfo = ray_triangle_intersection(ray, tri);
 		if (hitInfo.dist < bestHit.dist) {
 			bestHit.hit = true;
 			bestHit.pos = hitInfo.pos;
 			bestHit.dist = hitInfo.dist;
 			bestHit.normal = hitInfo.normal;
-			bestHit.albedoSpecular = vec4(1, 1, 1, 1);
+			bestHit.albedoSpecular = vec4(0, 1, 0, 1);
 		}
-	}*/
-    
+	}
+
+    const Capsule capsule = { vec3(5, 0, 0), vec3(5, 2, 20), 5, vec4(1, 0, 0, 1) };
+    RayHit capsuleHit = ray_capsule_intersection(ray, capsule);
+    if (capsuleHit.dist < bestHit.dist) {
+		bestHit.hit = true;
+		bestHit.pos = capsuleHit.pos;
+		bestHit.dist = capsuleHit.dist;
+		bestHit.normal = capsuleHit.normal;
+		bestHit.albedoSpecular = capsuleHit.albedoSpecular;
+	}
+
     return bestHit;
 }
 
@@ -225,7 +342,7 @@ void main() {
 	float depth = rayhit.dist;
 
     //albedo = vec3(0);
-    //albedo = vec3(triangleCount);
+    //albedo = vec3(triangles[texelCoord.x].normC);
 
 	imageStore(gAlbedoSpecular, texelCoord, vec4(albedo, specular));
 	imageStore(gPosition, texelCoord, vec4(position, 0));

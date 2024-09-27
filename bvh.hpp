@@ -4,13 +4,13 @@
 
 struct float3
 {
-	float x, y, z;
+	float x, y, z; float padding;
 };
 
 struct Triangle
 {
-	float3 vertA, vertB, vertC; float padding0;
-	float3 normA, normB, normC; float padding1;
+	float3 vertA, vertB, vertC;
+	float3 normA, normB, normC;
 };
 
 struct Model
@@ -19,6 +19,8 @@ struct Model
 	float3 albedo;
 	float specular;
 };
+
+
 
 Model LoadModel(const char* const filepath);
 
