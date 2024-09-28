@@ -280,6 +280,7 @@ RayHit ray_triangle_intersection(Ray ray, Triangle tri)
 	    hitInfo.pos = ray.pos + ray.dir * t;
 		float w = 1 - u - v;
 	    hitInfo.normal = normalize(tri.normA * w + tri.normB * u + tri.normC * v);
+        hitInfo.normal = normalize(cross(edge2, edge1));
 	    hitInfo.dist = t;
 
 
@@ -307,18 +308,8 @@ RayHit trace(Ray ray) {
 			bestHit.pos = hitInfo.pos;
 			bestHit.dist = hitInfo.dist;
 			bestHit.normal = hitInfo.normal;
-			bestHit.albedoSpecular = vec4(0, 1, 0, 1);
+			bestHit.albedoSpecular = vec4(1, 0.75, 0, 1);
 		}
-	}
-
-    const Capsule capsule = { vec3(5, 0, 0), vec3(5, 2, 20), 5, vec4(1, 0, 0, 1) };
-    RayHit capsuleHit = ray_capsule_intersection(ray, capsule);
-    if (capsuleHit.dist < bestHit.dist) {
-		bestHit.hit = true;
-		bestHit.pos = capsuleHit.pos;
-		bestHit.dist = capsuleHit.dist;
-		bestHit.normal = capsuleHit.normal;
-		bestHit.albedoSpecular = capsuleHit.albedoSpecular;
 	}
 
     return bestHit;

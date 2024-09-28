@@ -10,7 +10,7 @@
 
 
 
-#define FULLSCREEN false
+#define FULLSCREEN true
 
 
 
@@ -27,12 +27,14 @@ int main(int argc, char** argv)
 		windowWidth = 640 * 2;
 		windowHeight = 360 * 2;
 		window = glfwCreateWindow(windowWidth, windowHeight, "Raytracer", NULL, NULL);
+		glfwMakeContextCurrent(window);
 	}
 	else
 	{
 		windowWidth = 1920;
 		windowHeight = 1080;
 		window = glfwCreateWindow(windowWidth, windowHeight, "Raytracer", glfwGetPrimaryMonitor(), NULL);
+		glfwMakeContextCurrent(window);
 		glfwSwapInterval(1);
 	}
 	if (!window)
@@ -41,8 +43,6 @@ int main(int argc, char** argv)
 		glfwTerminate();
 		return -1;
 	}
-	glfwMakeContextCurrent(window);
-	//glfwSwapInterval(1);
 	glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
 	glfwSetCursorPosCallback(window, MouseCallback);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
