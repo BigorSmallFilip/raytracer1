@@ -151,7 +151,7 @@ RayHit create_ray_hit() {
     hit.pos = vec3(0);
     hit.dist = INFINITY;
     hit.normal = vec3(0);
-    hit.albedoSpecular = vec4(1.0, 0.0, 1.0, 0.0);
+    hit.albedoSpecular = vec4(0.0, 0.0, 0.0, 0.0);
     return hit;
 }
 
@@ -436,6 +436,14 @@ RayHit trace(Ray ray) {
 			bestHit.normal = modelHit.normal;
 			bestHit.dist = modelHit.dist;
 			bestHit.albedoSpecular = modelHit.material.albedoSpecular;
+
+			const int boxMax = 200;
+			const int triMax = 20;
+			bestHit.albedoSpecular = vec4(float(stats.x) / triMax, 0, float(stats.y) / boxMax, 1);
+			if (stats.x > triMax) bestHit.albedoSpecular = vec4(1, 0.75, 0.75, 1);
+			if (stats.y > boxMax) bestHit.albedoSpecular = vec4(0.75, 0.75, 1, 1);
+			if (stats.y > boxMax && stats.x > triMax) bestHit.albedoSpecular = vec4(0.25, 0, 0, 1);
+
 		}
     }
 

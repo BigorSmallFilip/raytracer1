@@ -340,8 +340,8 @@ Model LoadModel(const char* const filepath)
 
 bool BuildAndDoEverythingElseWithBVH()
 {
-	Model testo = LoadModel("ringworldjoined.OBJ_MODEL");
-	BLAS testoBLAS{ testo, 32 };
+	Model testo = LoadModel("ringworldjoined_nostruts.OBJ_MODEL");
+	BLAS testoBLAS{ testo, 23 };
 	
 	std::vector<RayTraceModel> modelsBuffer;
 	modelsBuffer.push_back(RayTraceModel(testoBLAS,
@@ -350,7 +350,6 @@ bool BuildAndDoEverythingElseWithBVH()
 		0,
 		glm::vec3(10, 10, 10)));
 	
-
 	//exit(0);
 
 	CreateBufferAndCount(

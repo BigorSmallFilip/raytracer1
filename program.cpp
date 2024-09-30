@@ -159,7 +159,8 @@ bool ProgramInit()
 
 int frameCount = 0;
 float combinedTime = 0;
-#define FPS_CHECKO 6
+float timeThisSecond = 0;
+int framesThisSecond = 0;
 
 void ProgramLoop()
 {
@@ -202,14 +203,19 @@ void ProgramLoop()
 	
 
 	combinedTime += deltaTime;
-	if ((frameCount & ((1 << FPS_CHECKO) - 1)) == 0)
+	timeThisSecond += deltaTime;
+	framesThisSecond++;
+	if (timeThisSecond >= 1)
 	{
 		std::cout << std::setfill('0') << std::setw(4)
 			<< std::fixed << std::setprecision(4);
-		std::cout << "FPS =  " << 1.0f / (combinedTime / (float)(1 << FPS_CHECKO)) << "\t";
-		std::cout << "Raytracing time: " << perf_raytrace * 1000 << "ms\t";
-		std::cout << "Lighting time: " << perf_lighting * 1000 << "ms\n";
-		combinedTime = 0;
+
+		float timePerFrame = timeThisSecond / (float)framesThisSecond;
+		std::cout << "FPS =  " << 1.0 / timePerFrame << "\t";
+		std::cout << "Raytracing time: " << perf_raytrace * 1000 << "s\t";
+		std::cout << "Lighting time: " << perf_lighting * 1000 << "s\n";
+		timeThisSecond -= 1;
+		framesThisSecond = 0;
 	}
 
 

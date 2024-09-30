@@ -10,7 +10,7 @@
 
 
 
-#define FULLSCREEN true
+#define FULLSCREEN false
 
 
 
@@ -24,8 +24,8 @@ int main(int argc, char** argv)
 	GLFWwindow* window = nullptr;
 	if (!FULLSCREEN)
 	{
-		windowWidth = 640 * 2;
-		windowHeight = 360 * 2;
+		windowWidth = 1280;
+		windowHeight = 720;
 		window = glfwCreateWindow(windowWidth, windowHeight, "Raytracer", NULL, NULL);
 		glfwMakeContextCurrent(window);
 	}
