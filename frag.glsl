@@ -18,9 +18,9 @@ void main() {
     float depth = texture(gDepth, TexCoords).r;
 
     vec3 color = vec3(0);
-    color = albedo * dot(normal, vec3(0.707, 0.707, 0));
+    color = albedo * dot(normal, normalize(-position));
     //color = albedo / ((depth * depth) / 5);
-    //color = normal;
+    //color = albedo;
 
     FragColor = vec4(color, 0);
 }

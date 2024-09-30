@@ -167,6 +167,7 @@
     <None Include="comp_spheres.glsl" />
     <None Include="cube.OBJ_MODEL" />
     <None Include="frag.glsl" />
+    <None Include="ringworldjoined.OBJ_MODEL" />
     <None Include="test.OBJ_MODEL" />
     <None Include="vert.glsl" />
   </ItemGroup>

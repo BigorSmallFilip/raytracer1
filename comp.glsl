@@ -21,6 +21,7 @@ layout(binding = 3, r32f)    writeonly uniform image2D gDepth;
 struct Ray {
 	vec3 pos;
 	vec3 dir;
+    vec3 invdir;
 };
 
 struct RayHit {
@@ -44,9 +45,22 @@ struct Capsule {
     vec4 albedoSpecular;
 };
 
+
+
 struct Triangle {
 	vec3 vertA, vertB, vertC;
 	vec3 normA, normB, normC;
+};
+
+struct BVHNode {
+	vec3 boundsMin; float _padding0;
+	vec3 boundsMax; float _padding1;
+	// index refers to triangles if is leaf node (triangleCount > 0)
+	// otherwise it is the index of the first child node
+	int startIndex;
+	int triangleCount;
+    int _padding2;
+    int _padding3;
 };
 
 struct RayTracingMaterial {
@@ -62,20 +76,19 @@ struct Model {
 	RayTracingMaterial material;
 };
 
-struct BVHNode {
-	vec3 boundsMin;
-	vec3 boundsMax;
-	// index refers to triangles if is leaf node (triangleCount > 0)
-	// otherwise it is the index of the first child node
-	int startIndex;
-	int triangleCount;
+struct TriangleHitInfo {
+    bool hit;
+	vec3 pos;
+	float dist;
+	vec3 normal;
+    int triIndex;
 };
 
 struct ModelHitInfo {
 	bool hit;
-	vec3 normal;
 	vec3 pos;
-	float dst;
+	float dist;
+	vec3 normal;
 	RayTracingMaterial material;
 };
 
@@ -116,6 +129,7 @@ Ray create_ray(vec3 pos, vec3 dir) {
     Ray ray;
     ray.pos = pos;
     ray.dir = dir;
+    ray.invdir = 1.0 / dir;
     return ray;
 }
 
@@ -246,10 +260,14 @@ RayHit ray_capsule_intersection(Ray ray, Capsule capsule)
 }*/
 
 
-RayHit ray_triangle_intersection(Ray ray, Triangle tri)
+TriangleHitInfo ray_triangle_intersection(Ray ray, Triangle tri)
 {
-    RayHit hitInfo = create_ray_hit();
-
+    TriangleHitInfo hitInfo;
+    hitInfo.hit = false;
+    hitInfo.pos = vec3(0);
+    hitInfo.dist = INFINITY;
+    hitInfo.normal = vec3(0);
+    
     vec3 edge1 = tri.vertB - tri.vertA;
     vec3 edge2 = tri.vertC - tri.vertA;
     vec3 ray_cross_e2 = cross(ray.dir, edge2);
@@ -290,6 +308,116 @@ RayHit ray_triangle_intersection(Ray ray, Triangle tri)
         return hitInfo;
 }
 
+// Thanks to https://tavianator.com/2011/ray_box.html
+float ray_boundingbox_dist(Ray ray, vec3 boxMin, vec3 boxMax)
+{
+	vec3 tMin = (boxMin - ray.pos) * ray.invdir;
+	vec3 tMax = (boxMax - ray.pos) * ray.invdir;
+	vec3 t1 = min(tMin, tMax);
+	vec3 t2 = max(tMin, tMax);
+	float tNear = max(max(t1.x, t1.y), t1.z);
+	float tFar = min(min(t2.x, t2.y), t2.z);
+
+	bool hit = tFar >= tNear && tFar > 0;
+	float dist = hit ? tNear > 0 ? tNear : 0 : INFINITY;
+	return dist;
+};
+
+
+
+TriangleHitInfo RayTriangleBVH(Ray ray, float rayLength, int nodeOffset, int triOffset, inout ivec2 stats)
+{
+	TriangleHitInfo result;
+	result.dist = rayLength;
+	result.triIndex = -1;
+
+	int stack[32];
+	int stackIndex = 0;
+	stack[stackIndex++] = nodeOffset + 0;
+
+	while (stackIndex > 0)
+	{
+		BVHNode node = nodes[stack[--stackIndex]];
+		bool isLeaf = node.triangleCount > 0;
+
+		if (isLeaf)
+		{
+			for (int i = 0; i < node.triangleCount; i++)
+			{
+				Triangle tri = triangles[triOffset + node.startIndex + i];
+				TriangleHitInfo triHitInfo = ray_triangle_intersection(ray, tri);
+				stats[0]++; // count triangle intersection tests
+
+				if (triHitInfo.hit && triHitInfo.dist < result.dist)
+				{
+					result = triHitInfo;
+					result.triIndex = node.startIndex + i;
+				}
+			}
+		}
+		else
+		{
+			int childIndexA = nodeOffset + node.startIndex + 0;
+			int childIndexB = nodeOffset + node.startIndex + 1;
+			BVHNode childA = nodes[childIndexA];
+			BVHNode childB = nodes[childIndexB];
+
+			float distA = ray_boundingbox_dist(ray, childA.boundsMin, childA.boundsMax);
+			float distB = ray_boundingbox_dist(ray, childB.boundsMin, childB.boundsMax);
+			stats[1] += 2; // count bounding box intersection tests
+						
+			// We want to look at closest child node first, so push it last
+			bool isNearestA = distA <= distB;
+			float distNear = isNearestA ? distA : distB;
+			float distFar = isNearestA ? distB : distA;
+			int childIndexNear = isNearestA ? childIndexA : childIndexB;
+			int childIndexFar = isNearestA ? childIndexB : childIndexA;
+
+			if (distFar < result.dist) stack[stackIndex++] = childIndexFar;
+			if (distNear < result.dist) stack[stackIndex++] = childIndexNear;
+		}
+	}
+
+	return result;
+}
+
+ModelHitInfo CalculateRayCollision(Ray worldRay, out ivec2 stats)
+{
+	ModelHitInfo result;
+	result.dist = INFINITY;
+	Ray localRay;
+
+	for (int i = 0; i < modelCount; i++)
+	{
+		Model model = models[i];
+		// Transform ray into model's local coordinate space
+		localRay.pos = vec3(vec4(worldRay.pos, 1) * model.worldToLocalMatrix);
+		localRay.dir = vec3(vec4(worldRay.dir, 0) * model.worldToLocalMatrix);
+		localRay.invdir = 1.0 / localRay.dir;
+
+		// Traverse bvh to find closest triangle intersection with current model
+		TriangleHitInfo hit = RayTriangleBVH(localRay, result.dist, model.nodeOffset, model.triOffset, stats);
+
+		// Record closest hit
+		if (hit.dist < result.dist)
+		{
+			result.hit = true;
+			result.dist = hit.dist;
+			result.normal = normalize(vec3(vec4(hit.normal, 0) * model.localToWorldMatrix));
+			result.pos = worldRay.pos + worldRay.dir * hit.dist;
+			result.material = model.material;
+		}
+	}
+
+	//result.hit = true;
+	//result.dist = 20;
+	//result.material.albedoSpecular = vec4(0, 1, 0, 1);
+
+	return result;
+}
+
+
+
 
 RayHit trace(Ray ray) {
     RayHit bestHit = create_ray_hit();
@@ -300,17 +428,16 @@ RayHit trace(Ray ray) {
         ray_sphere_intersection(ray, bestHit, sphere);
     }
 
-	for (int i = 0; i < triangleCount; i++) {
-		Triangle tri = triangles[i];
-		RayHit hitInfo = ray_triangle_intersection(ray, tri);
-		if (hitInfo.dist < bestHit.dist) {
-			bestHit.hit = true;
-			bestHit.pos = hitInfo.pos;
-			bestHit.dist = hitInfo.dist;
-			bestHit.normal = hitInfo.normal;
-			bestHit.albedoSpecular = vec4(1, 0.75, 0, 1);
+	ivec2 stats = ivec2(0);
+	for (int i = 0; i < modelCount; i++) {
+        ModelHitInfo modelHit = CalculateRayCollision(ray, stats);
+		if (modelHit.dist < bestHit.dist) {
+			bestHit.pos = modelHit.pos;
+			bestHit.normal = modelHit.normal;
+			bestHit.dist = modelHit.dist;
+			bestHit.albedoSpecular = modelHit.material.albedoSpecular;
 		}
-	}
+    }
 
     return bestHit;
 }
@@ -332,9 +459,9 @@ void main() {
 	vec3 normal = rayhit.normal;
 	float depth = rayhit.dist;
 
-    //albedo = vec3(0);
-    //albedo = vec3(triangles[texelCoord.x].normC);
-
+    //albedo = vec3(uv, 0);
+    //albedo = vec3(sphereCount);
+    
 	imageStore(gAlbedoSpecular, texelCoord, vec4(albedo, specular));
 	imageStore(gPosition, texelCoord, vec4(position, 0));
 	imageStore(gNormal, texelCoord, vec4(normal, 0));

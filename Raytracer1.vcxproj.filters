@@ -76,6 +76,9 @@
     <None Include="test.OBJ_MODEL">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="ringworldjoined.OBJ_MODEL">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="bits.txt">

@@ -45,18 +45,11 @@ void CreateBufferAndCount(const char* const name, int binding, int numelements, 
 
 void InitSphereData()
 {
-	struct
-	{
-		int sphereCount = 100;
-		int PADDING0;
-		int PADDING1;
-		int PADDING2;
-		Sphere spheres[100] = { 0 };
-	} ssbo_bufferdata;
+	Sphere spheres[100] = { 0 };
 
 	for (int i = 0; i < 100; i++)
 	{
-		ssbo_bufferdata.spheres[i] = {
+		spheres[i] = {
 			RandomRange(-40, 40),
 			RandomRange(-40, 40),
 			RandomRange(-40, 40),
@@ -68,7 +61,7 @@ void InitSphereData()
 		};
 	}
 
-	CreateBuffer("sphere_buffer", 5, sizeof(ssbo_bufferdata), &ssbo_bufferdata);
+	CreateBufferAndCount("sphere_buffer", 4, 0, sizeof(spheres), &spheres);
 }
 
 

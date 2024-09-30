@@ -26,4 +26,5 @@ void SetUniform(GLuint program, const char* const name, const glm::mat4& mat);
 
 void RenderQuad();
 
+float Lerp(float a, float b, float t);
 float RandomRange(float min, float max);

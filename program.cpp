@@ -148,6 +148,8 @@ bool ProgramInit()
 	glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &maxWorkGroups);
 	std::cout << "glGet() = " << maxWorkGroups << "\n";
 
+	g_camera.m_position.y = -2900;
+
 	return true;
 }
 

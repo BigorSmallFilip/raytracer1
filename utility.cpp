@@ -141,9 +141,14 @@ void RenderQuad()
 
 
 
+float Lerp(float a, float b, float t)
+{
+	return a + (b - a) * t;
+}
+
 float RandomRange(float min, float max)
 {
 	int r = rand() % 10000;
 	float rf = (float)r / 10000.0f;
-	return min + (max - min) * rf;
+	return Lerp(min, max, rf);
 }
