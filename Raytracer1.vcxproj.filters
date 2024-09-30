@@ -56,6 +56,9 @@
     <ClInclude Include="bvh.hpp">
       <Filter>Source Files\Program</Filter>
     </ClInclude>
+    <ClInclude Include="stbi_image.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="comp.glsl">
@@ -82,10 +85,21 @@
     <None Include="ringworldjoined_nostruts.OBJ_MODEL">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="ringworldjoined_normals.OBJ_MODEL">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="bits.txt">
       <Filter>Resource Files</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="testTexture.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="grass.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

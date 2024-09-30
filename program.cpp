@@ -9,6 +9,9 @@
 #include "input.hpp"
 #include "buffer.hpp"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stbi_image.h"
+
 
 
 GLuint screenQuadProgram = -1;
@@ -75,7 +78,7 @@ public:
 	void UpdateMovement()
 	{
 		constexpr float sensitivityX = 0.005f;
-		constexpr float sensitivityY = 0.005f;
+		constexpr float sensitivityY = 0.004f;
 		m_rotation.y += (float)mouseDeltaX * sensitivityX;
 		m_rotation.x += (float)mouseDeltaY * sensitivityY;
 		if (m_rotation.x < -M_PI / 2) m_rotation.x = -M_PI / 2;
@@ -89,7 +92,7 @@ public:
 		up      = up      * viewMatrix - glm::vec4(m_position, 0);
 		forward = forward * viewMatrix - glm::vec4(m_position, 0);
 
-		constexpr float speed = 10.0f;
+		constexpr float speed = 1000.0f;
 		if (inputsDown & INPUT_W)     m_position += forward * (speed * deltaTime);
 		if (inputsDown & INPUT_S)     m_position -= forward * (speed * deltaTime);
 		if (inputsDown & INPUT_D)     m_position += right   * (speed * deltaTime);
@@ -116,6 +119,7 @@ bool ProgramInit()
 	SetUniform(screenQuadProgram, "gPosition", 1);
 	SetUniform(screenQuadProgram, "gNormal", 2);
 	SetUniform(screenQuadProgram, "gDepth", 3);
+	SetUniform(screenQuadProgram, "testTexture", 4);
 
 	GLuint computeShader = CreateShader(GL_COMPUTE_SHADER, "comp.glsl");
 	rayTraceProgram = CreateProgram(computeShader);
@@ -123,9 +127,8 @@ bool ProgramInit()
 	SetUniform(rayTraceProgram, "gPosition", 1);
 	SetUniform(rayTraceProgram, "gNormal", 2);
 	SetUniform(rayTraceProgram, "gDepth", 3);
+	SetUniform(rayTraceProgram, "testTexture", 4);
 
-	
-	
 	// Create the G-BUFFER oh yes
 
 	renderWidth = windowWidth;
@@ -137,6 +140,27 @@ bool ProgramInit()
 	CreateTexture(gNormal, 2, GL_RGBA32F, GL_RGBA, GL_FLOAT);
 	CreateTexture(gDepth, 3, GL_R32F, GL_RED, GL_FLOAT);
 
+
+
+	int testTextureWidth = 0;
+	int testTextureHeight = 0;
+	int nrChannels = 0;
+	unsigned char* data = stbi_load("grass.png", &testTextureWidth, &testTextureHeight, &nrChannels, 0);
+	if (!data)
+	{
+		std::cout << "Could not load the test texture!\n";
+		return false;
+	}
+	GLuint testTexture;
+	glGenTextures(1, &testTexture);
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, testTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, testTextureWidth, testTextureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	stbi_image_free(data);
 
 
 	InitSphereData();

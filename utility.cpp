@@ -75,6 +75,7 @@ GLuint CreateProgram(GLuint shader0)
 	glLinkProgram(program);
 	CheckCompileErrors(program, true);
 	glDeleteShader(shader0);
+	glUseProgram(program); // why is this needed???
 	return program;
 }
 

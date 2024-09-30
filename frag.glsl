@@ -9,6 +9,8 @@ uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gDepth;
 
+uniform sampler2D testTexture;
+
 void main() {
     vec4 albedoSpecular = texture(gAlbedoSpecular, TexCoords);
     vec3 albedo = albedoSpecular.rgb;
@@ -18,9 +20,9 @@ void main() {
     float depth = texture(gDepth, TexCoords).r;
 
     vec3 color = vec3(0);
-    color = albedo * dot(normal, normalize(-position));
+    color = albedo * dot(normal, -normalize(position));
     //color = vec3((depth * depth) / 3000);
-    color = albedo;
+    //color = position / 3000;
 
     FragColor = vec4(color, 0);
 }

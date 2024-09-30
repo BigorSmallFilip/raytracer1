@@ -16,6 +16,8 @@ layout(binding = 1, rgba32f) writeonly uniform image2D gPosition;
 layout(binding = 2, rgba32f) writeonly uniform image2D gNormal;
 layout(binding = 3, r32f)    writeonly uniform image2D gDepth;
 
+uniform sampler2D testTexture;
+
 
 
 struct Ray {
@@ -298,7 +300,8 @@ TriangleHitInfo ray_triangle_intersection(Ray ray, Triangle tri)
 	    hitInfo.pos = ray.pos + ray.dir * t;
 		float w = 1 - u - v;
 	    hitInfo.normal = normalize(tri.normA * w + tri.normB * u + tri.normC * v);
-        hitInfo.normal = normalize(cross(edge2, edge1));
+        //hitInfo.normal = normalize(vec3(1, 0, 0) * w + vec3(0, 1, 0) * u + vec3(0, 0, 1) * v);
+        //hitInfo.normal = normalize(cross(edge2, edge1));
 	    hitInfo.dist = t;
 
 
@@ -437,12 +440,15 @@ RayHit trace(Ray ray) {
 			bestHit.dist = modelHit.dist;
 			bestHit.albedoSpecular = modelHit.material.albedoSpecular;
 
-			const int boxMax = 200;
+			float angle = atan(bestHit.pos.y / bestHit.pos.x) * 2800;
+			bestHit.albedoSpecular = vec4(texture(testTexture, vec2(bestHit.pos.z, angle) * 0.2).rgb, 0.5);
+
+			/*const int boxMax = 200;
 			const int triMax = 20;
 			bestHit.albedoSpecular = vec4(float(stats.x) / triMax, 0, float(stats.y) / boxMax, 1);
 			if (stats.x > triMax) bestHit.albedoSpecular = vec4(1, 0.75, 0.75, 1);
 			if (stats.y > boxMax) bestHit.albedoSpecular = vec4(0.75, 0.75, 1, 1);
-			if (stats.y > boxMax && stats.x > triMax) bestHit.albedoSpecular = vec4(0.25, 0, 0, 1);
+			if (stats.y > boxMax && stats.x > triMax) bestHit.albedoSpecular = vec4(0.25, 0, 0, 1);*/
 
 		}
     }
@@ -467,8 +473,10 @@ void main() {
 	vec3 normal = rayhit.normal;
 	float depth = rayhit.dist;
 
-    //albedo = vec3(uv, 0);
-    //albedo = vec3(sphereCount);
+	//albedo = texture(testTexture, uv).rgb;
+	//albedo = imageLoad(testTexture, texelCoord).rgb;
+	
+    //albedo = vec3(uv / 2 + 0.5, 0);
     
 	imageStore(gAlbedoSpecular, texelCoord, vec4(albedo, specular));
 	imageStore(gPosition, texelCoord, vec4(position, 0));

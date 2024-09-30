@@ -298,6 +298,7 @@ Model LoadModel(const char* const filepath)
 
 	// Local cache of verts
 	std::vector<glm::vec4> verts;
+	std::vector<glm::vec4> normals;
 
 	while (!f.eof())
 	{
@@ -309,26 +310,33 @@ Model LoadModel(const char* const filepath)
 
 		char junk;
 
-		if (line[0] == 'v')
+		if (line[0] == 'v' && line[1] == ' ')
 		{
 			glm::vec4 v;
 			s >> junk >> v.x >> v.y >> v.z;
 			v.x = -v.x;
 			verts.push_back(v);
 		}
-
+		if (line[0] == 'v' && line[1] == 'n')
+		{
+			glm::vec4 n;
+			s >> junk >> junk >> n.x >> n.y >> n.z;
+			n.x = -n.x;
+			normals.push_back(n);
+		}
 		if (line[0] == 'f')
 		{
 			int f[3];
-			s >> junk >> f[0] >> f[1] >> f[2];
+			int n[3];
+			s >> junk >> f[0] >> n[0] >> f[1] >> n[1] >> f[2] >> n[2];
 
 			Triangle tri{};
 			tri.vertA = verts[f[0] - 1];
 			tri.vertB = verts[f[1] - 1];
 			tri.vertC = verts[f[2] - 1];
-			tri.normA = glm::vec4{ 0 };
-			tri.normB = glm::vec4{ 0 };
-			tri.normC = glm::vec4{ 0 };
+			tri.normA = normals[n[0] - 1];
+			tri.normB = normals[n[1] - 1];
+			tri.normC = normals[n[2] - 1];
 			model.triangles.push_back(tri);
 		}
 	}
@@ -340,7 +348,7 @@ Model LoadModel(const char* const filepath)
 
 bool BuildAndDoEverythingElseWithBVH()
 {
-	Model testo = LoadModel("ringworldjoined_nostruts.OBJ_MODEL");
+	Model testo = LoadModel("ringworldjoined_normals.OBJ_MODEL");
 	BLAS testoBLAS{ testo, 23 };
 	
 	std::vector<RayTraceModel> modelsBuffer;
