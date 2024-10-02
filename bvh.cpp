@@ -48,8 +48,8 @@ BLAS::Node::Node(BoundingBox bounds)
 {
 	boundsMin = bounds.min;
 	boundsMax = bounds.max;
-	startIndex = -1;
-	triangleCount = -1;
+	startIndex = 0;
+	triangleCount = 0;
 }
 
 BLAS::Node::Node(BoundingBox bounds, int _startIndex, int _triangleCount)
@@ -109,6 +109,25 @@ BLAS::BLAS(const Model& model, int maxNodeDepth)
 		m_orderedTriangles.push_back(tri);
 	}
 
+
+
+	int startIndexMax = 0;
+	int triangleCountMax = 0;
+	for (int i = 0; i < m_nodes.nodes.size(); i++)
+	{
+		BLAS::Node node = m_nodes.nodes[i];
+		if (node.startIndex > startIndexMax) startIndexMax = node.startIndex;
+		if (node.triangleCount > triangleCountMax) triangleCountMax = node.triangleCount;
+	}
+	std::cout << "startIndexMax = " << startIndexMax << "\n";
+	std::cout << "triangleCountMax = " << triangleCountMax << "\n";
+
+	if (startIndexMax > (1 << 24) || triangleCountMax > (1 << 8))
+	{
+		std::cerr << "CRITICAL ERROR TOO BIG MODEL!!!\n";
+		exit(-1);
+	}
+
 	std::cout << "BLAS Done!\n";
 }
 
@@ -157,8 +176,8 @@ void BLAS::Split(
 		int triStartRight = triGlobalStart + numOnLeft;
 
 		// Split parent into two children
-		int childIndexLeft = m_nodes.Add(Node(boundsLeft, triStartLeft, -1));
-		int childIndexRight = m_nodes.Add(Node(boundsRight, triStartRight, -1));
+		int childIndexLeft = m_nodes.Add(Node(boundsLeft, triStartLeft, 0));
+		int childIndexRight = m_nodes.Add(Node(boundsRight, triStartRight, 0));
 
 		// Update parent
 		parent.startIndex = childIndexLeft;
@@ -274,6 +293,7 @@ RayTraceModel::RayTraceModel(
 	albedoSpecular = glm::vec4(albedo, specular);
 	this->flags = flags;
 	glm::mat4 w = glm::mat4(1.0f);
+	w = glm::scale(w, 1.0f / scale);
 	w = glm::rotate(w, rotation.z, glm::vec3(0, 0, 1));
 	w = glm::rotate(w, rotation.y, glm::vec3(0, 1, 0));
 	w = glm::rotate(w, rotation.x, glm::vec3(1, 0, 0));
@@ -349,6 +369,28 @@ Model LoadModel(const char* const filepath)
 bool BuildAndDoEverythingElseWithBVH()
 {
 	Model testo = LoadModel("ringworldjoined_normals.OBJ_MODEL");
+	/*BoundingBox modelBounds{};
+	for (int i = 0; i < testo.triangles.size(); i++)
+	{
+		const Triangle& tri = testo.triangles[i];
+		glm::vec3 boundsMin = glm::min(glm::min(tri.vertA, tri.vertB), tri.vertC);
+		glm::vec3 boundsMax = glm::max(glm::max(tri.vertA, tri.vertB), tri.vertC);
+		modelBounds.GrowToInclude(boundsMin, boundsMax);
+	}
+	Model testoScaled{};
+	for (int i = 0; i < testo.triangles.size(); i++)
+	{
+		Triangle tri = testo.triangles[i];
+		Triangle scaledTri;
+		glm::vec4 scale = glm::vec4(1.0f / modelBounds.Size(), 1);
+		scaledTri.vertA = tri.vertA * scale + glm::vec4(0.5f, 0.5f, 0.5f, 0);
+		scaledTri.vertB = tri.vertB * scale + glm::vec4(0.5f, 0.5f, 0.5f, 0);
+		scaledTri.vertC = tri.vertC * scale + glm::vec4(0.5f, 0.5f, 0.5f, 0);
+		scaledTri.normA = tri.normA;
+		scaledTri.normB = tri.normB;
+		scaledTri.normC = tri.normC;
+		testoScaled.triangles.push_back(scaledTri);
+	}*/
 	BLAS testoBLAS{ testo, 23 };
 	
 	std::vector<RayTraceModel> modelsBuffer;
@@ -356,9 +398,32 @@ bool BuildAndDoEverythingElseWithBVH()
 		glm::vec3(1.0f, 1.0f, 1.0f),
 		0.5f,
 		0,
-		glm::vec3(10, 10, 10)));
+		glm::vec3(0, 0, 0),
+		glm::vec3(0, 0, 0),
+		glm::vec3(1, 1, 1)));
+
+	//std::cout << "Model bounds = " << modelBounds.Size().x << ", " << modelBounds.Size().y << ", " << modelBounds.Size().z << "\n";
 	
 	//exit(0);
+
+	/*std::vector<TinyTriangle> tinyTriangleBuffer;
+	for (int i = 0; i < testoScaled.triangles.size(); i++)
+	{
+		Triangle tri = testoScaled.triangles[i];
+		TinyTriangle tiny = { 0 };
+		tiny.Avx_Avy |= unsigned short(tri.vertA.x * 65535.0f) << 0;
+		tiny.Avx_Avy |= unsigned short(tri.vertA.y * 65535.0f) << 16;
+		tiny.Bvx_Bvy |= unsigned short(tri.vertB.x * 65535.0f) << 0;
+		tiny.Bvx_Bvy |= unsigned short(tri.vertB.y * 65535.0f) << 16;
+		tiny.Cvx_Cvy |= unsigned short(tri.vertC.x * 65535.0f) << 0;
+		tiny.Cvx_Cvy |= unsigned short(tri.vertC.y * 65535.0f) << 16;
+		tiny.Avz_Bvz |= unsigned short(tri.vertA.z * 65535.0f) << 0;
+		tiny.Avz_Bvz |= unsigned short(tri.vertB.z * 65535.0f) << 16;
+		tiny.Cvz_Anx_Any |= unsigned short(tri.vertC.z * 65535.0f) << 0;
+		tiny.Cvz_Anx_Any |= unsigned char(tri.normA.x * 0.5f) << 0;
+
+	}*/
+
 
 	CreateBufferAndCount(
 		"models_buffer",
@@ -380,7 +445,6 @@ bool BuildAndDoEverythingElseWithBVH()
 		testoBLAS.m_nodes.nodes.size(),
 		sizeof(BLAS::Node) * testoBLAS.m_nodes.nodes.size(),
 		(void*)testoBLAS.m_nodes.nodes.data());
-		
 
 	//CreateBuffer("node_buffer", 7, 0, 0);
 

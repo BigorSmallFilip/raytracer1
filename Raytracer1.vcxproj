@@ -165,6 +165,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="comp.glsl" />
+    <None Include="comp_tinydata.glsl" />
     <None Include="comp_spheres.glsl" />
     <None Include="cube.OBJ_MODEL" />
     <None Include="frag.glsl" />

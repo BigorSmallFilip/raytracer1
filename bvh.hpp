@@ -8,6 +8,17 @@ struct Triangle
 	glm::vec4 vertA, vertB, vertC;
 	glm::vec4 normA, normB, normC;
 };
+struct TinyTriangle
+{
+	unsigned int Avx_Avy;
+	unsigned int Bvx_Bvy;
+	unsigned int Cvx_Cvy;
+	unsigned int Avz_Bvz;
+	unsigned int Cvz_Anx_Any;
+	unsigned int Anz_Bnx_Bny_Bnz;
+	unsigned int Cnx_Cny_Cnz;
+	unsigned int _padding;
+};
 
 struct Model
 {
@@ -45,6 +56,13 @@ struct BLAS
 		Node(BoundingBox bounds, int _startIndex, int _triangleCount);
 		glm::vec3 CalculateBoundsSize();
 		glm::vec3 CalculateBoundsCentre();
+	};
+	struct TinyNode
+	{
+		unsigned int mix_max;
+		unsigned int miy_may;
+		unsigned int miz_maz;
+		unsigned int startIndex24_triangleCount8;
 	};
 	struct BVHTriangle
 	{
