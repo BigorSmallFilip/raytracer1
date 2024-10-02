@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <vector>
 #define _USE_MATH_DEFINES
 #include <math.h>
 
@@ -186,6 +187,9 @@ float combinedTime = 0;
 float timeThisSecond = 0;
 int framesThisSecond = 0;
 
+std::vector<double> raytraceTimes;
+std::vector<double> fragmentTimes;
+
 void ProgramLoop()
 {
 	double perf_raytrace = 0.0;
@@ -227,19 +231,45 @@ void ProgramLoop()
 	
 
 	combinedTime += deltaTime;
+	raytraceTimes.push_back(perf_raytrace);
+	fragmentTimes.push_back(perf_lighting);
 	timeThisSecond += deltaTime;
 	framesThisSecond++;
 	if (timeThisSecond >= 1)
 	{
 		std::cout << std::setfill('0') << std::setw(4)
-			<< std::fixed << std::setprecision(4);
+			<< std::fixed << std::setprecision(1);
 
 		float timePerFrame = timeThisSecond / (float)framesThisSecond;
-		std::cout << "FPS =  " << 1.0 / timePerFrame << "\t";
-		std::cout << "Raytracing time: " << perf_raytrace * 1000 << "s\t";
-		std::cout << "Lighting time: " << perf_lighting * 1000 << "s\n";
+		
+		double maxRaytraceTime = 0.0;
+		double totRaytraceTime = 0.0;
+		double avgRaytraceTime = 0.0;
+		for (int i = 0; i < raytraceTimes.size(); i++)
+		{
+			double t = raytraceTimes[i];
+			if (t > maxRaytraceTime) maxRaytraceTime = t;
+			totRaytraceTime += t;
+		}
+		avgRaytraceTime = totRaytraceTime / raytraceTimes.size();
+		double maxFragmentTime = 0.0;
+		double totFragmentTime = 0.0;
+		double avgFragmentTime = 0.0;
+		for (int i = 0; i < fragmentTimes.size(); i++)
+		{
+			double t = fragmentTimes[i];
+			if (t > maxFragmentTime) maxFragmentTime = t;
+			totFragmentTime += t;
+		}
+		avgFragmentTime = totFragmentTime / fragmentTimes.size();
+
+		std::cout << "\nPerf:\nFPS =  " << 1.0 / timePerFrame << "\n";
+		std::cout << "avgRT: " << avgRaytraceTime * 1000000 << "ms\t" << "maxRT: " << maxRaytraceTime * 1000000 << "ms\n";
+		std::cout << "avgFG: " << avgFragmentTime * 1000000 << "ms\t" << "maxFG: " << maxFragmentTime * 1000000 << "ms\n";
 		timeThisSecond -= 1;
 		framesThisSecond = 0;
+		raytraceTimes.clear();
+		fragmentTimes.clear();
 	}
 
 
