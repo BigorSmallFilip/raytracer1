@@ -21,7 +21,13 @@ void main() {
 
     vec3 color = vec3(0);
     color = albedo * dot(normal, -normalize(position));
-    //color = vec3((depth * depth) / 3000);
+    
+    if (depth < 1000000000) {
+        vec3 fogColor = vec3(0.7, 0.7, 1.0);
+        float fogFactor = 1 - (30000 - depth) / (30000);
+        color = mix(color, fogColor, fogFactor);
+    }
+
     //color = position / 3000;
 
     FragColor = vec4(color, 0);
