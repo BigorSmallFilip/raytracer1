@@ -23,8 +23,8 @@ void main() {
     color = albedo * dot(normal, -normalize(position));
     
     if (depth < 1000000000) {
-        vec3 fogColor = vec3(0.7, 0.7, 1.0);
-        float fogFactor = 1 - (30000 - depth) / (30000);
+        vec3 fogColor = vec3(0.6, 0.6, 1.0);
+        float fogFactor = 1 - (40000 - depth) / (40000);
         color = mix(color, fogColor, fogFactor);
     }
 
