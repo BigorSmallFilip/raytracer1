@@ -93,7 +93,7 @@ public:
 		up      = up      * viewMatrix - glm::vec4(m_position, 0);
 		forward = forward * viewMatrix - glm::vec4(m_position, 0);
 
-		constexpr float speed = 1000.0f;
+		constexpr float speed = 20.0f;
 		if (inputsDown & INPUT_W)     m_position += forward * (speed * deltaTime);
 		if (inputsDown & INPUT_S)     m_position -= forward * (speed * deltaTime);
 		if (inputsDown & INPUT_D)     m_position += right   * (speed * deltaTime);
@@ -158,9 +158,10 @@ bool ProgramInit()
 	glBindTexture(GL_TEXTURE_2D, testTexture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, testTextureWidth, testTextureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(data);
 
 
