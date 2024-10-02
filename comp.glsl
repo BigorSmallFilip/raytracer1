@@ -441,7 +441,7 @@ RayHit trace(Ray ray) {
 			bestHit.albedoSpecular = modelHit.material.albedoSpecular;
 
 			float angle = atan(bestHit.pos.y / bestHit.pos.x) * 2800;
-			float mipmapLevel = log2(bestHit.dist) * 0.5;
+			float mipmapLevel = log2(bestHit.dist) * 0.5 + (bestHit.dist / 500);
 			bestHit.albedoSpecular = vec4(textureLod(testTexture, vec2(bestHit.pos.z, angle) * 0.2, mipmapLevel).rgb, 0.5);
 
 			/*const int boxMax = 200;
