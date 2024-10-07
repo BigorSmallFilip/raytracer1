@@ -51,9 +51,9 @@ void InitSphereData()
 	{
 		spheres[i] = {
 			RandomRange(-40, 40),
+			RandomRange(-40, 40)- 2900,
 			RandomRange(-40, 40),
-			RandomRange(-40, 40),
-			RandomRange(0.5f, 2.0f),
+			RandomRange(0.5f, 5.0f),
 			RandomRange(0, 1),
 			RandomRange(0, 1),
 			RandomRange(0, 1),
@@ -61,7 +61,7 @@ void InitSphereData()
 		};
 	}
 
-	CreateBufferAndCount("sphere_buffer", 4, 0, sizeof(spheres), &spheres);
+	CreateBufferAndCount("sphere_buffer", 4, 100, sizeof(spheres), &spheres);
 }
 
 

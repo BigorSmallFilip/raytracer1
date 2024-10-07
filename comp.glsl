@@ -174,8 +174,6 @@ void ray_sphere_intersection(Ray ray, inout RayHit bestHit, Sphere sphere) {
         bestHit.pos = ray.pos + t * ray.dir;
         bestHit.normal = normalize(bestHit.pos - sphere.position);
         bestHit.albedoSpecular = sphere.albedoSpecular;
-    } else {
-        bestHit.hit = false;
     }
 }
 
@@ -422,7 +420,7 @@ ModelHitInfo CalculateRayCollision(Ray worldRay, out ivec2 stats)
 
 
 
-RayHit trace(Ray ray) {
+RayHit traceGeometry(Ray ray) {
     RayHit bestHit = create_ray_hit();
     //IntersectGroundPlane(ray, bestHit);
 
@@ -435,6 +433,7 @@ RayHit trace(Ray ray) {
 	for (int i = 0; i < modelCount; i++) {
         ModelHitInfo modelHit = CalculateRayCollision(ray, stats);
 		if (modelHit.dist < bestHit.dist) {
+			bestHit.hit = true;
 			bestHit.pos = modelHit.pos;
 			bestHit.normal = modelHit.normal;
 			bestHit.dist = modelHit.dist;
@@ -442,8 +441,8 @@ RayHit trace(Ray ray) {
 
 			float angle = atan(bestHit.pos.y / bestHit.pos.x) * 2800;
 			float mipmapLevel = log2(bestHit.dist) * 0.5 + (bestHit.dist / 500);
-			bestHit.albedoSpecular = vec4(textureLod(testTexture, vec2(bestHit.pos.z, angle) * 0.2, mipmapLevel).rgb, 0.5);
-
+			bestHit.albedoSpecular = vec4(textureLod(testTexture, vec2(bestHit.pos.z, angle) * 0.2, mipmapLevel).rgb, 0.1);
+			
 			/*const int boxMax = 200;
 			const int triMax = 20;
 			bestHit.albedoSpecular = vec4(float(stats.x) / triMax, 0, float(stats.y) / boxMax, 1);
@@ -457,6 +456,27 @@ RayHit trace(Ray ray) {
     return bestHit;
 }
 
+RayHit trace(Ray ray) {
+	RayHit hit = traceGeometry(ray);
+	return hit;
+}
+
+RayHit traceMirror(Ray ray) {
+	RayHit hit = create_ray_hit();
+	hit = traceGeometry(ray);
+	for (int i = 0; i < 4; i++) {
+		if (!hit.hit || hit.albedoSpecular.w < 0.5) return hit;
+		ray = create_ray(hit.pos, reflect(ray.dir, hit.normal));
+		ray.pos += hit.normal * 0.01;
+		RayHit newhit = traceGeometry(ray);
+		vec4 col1 = newhit.albedoSpecular;
+		vec4 col2 = hit.albedoSpecular;
+		hit = newhit;
+		hit.albedoSpecular = vec4(col1.rgb * col2.rgb, hit.albedoSpecular.w);
+	}
+	return hit;
+}
+
 
 
 layout (local_size_x = 32, local_size_y = 30, local_size_z = 1) in;
@@ -466,7 +486,7 @@ void main() {
     vec2 uv = normalizedScreenCoord * 2 - 1;
 
     Ray ray = create_camera_ray(uv);
-    RayHit rayhit = trace(ray);
+    RayHit rayhit = traceMirror(ray);
 
 	vec3 albedo = rayhit.albedoSpecular.rgb;
 	float specular = rayhit.albedoSpecular.a;

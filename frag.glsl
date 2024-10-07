@@ -29,6 +29,9 @@ void main() {
     }
 
     //color = position / 3000;
+    if (normal == vec3(0, 0, 0)) {
+        color = albedo;
+    }
 
     FragColor = vec4(color, 0);
 }
