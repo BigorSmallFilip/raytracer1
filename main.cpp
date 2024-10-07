@@ -10,7 +10,7 @@
 
 
 
-#define FULLSCREEN false
+#define FULLSCREEN true
 
 
 

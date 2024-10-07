@@ -465,7 +465,7 @@ RayHit traceMirror(Ray ray) {
 	RayHit hit = create_ray_hit();
 	hit = traceGeometry(ray);
 	for (int i = 0; i < 4; i++) {
-		if (!hit.hit || hit.albedoSpecular.w < 0.5) return hit;
+		if (!hit.hit || hit.albedoSpecular.w < 0.5) break;
 		ray = create_ray(hit.pos, reflect(ray.dir, hit.normal));
 		ray.pos += hit.normal * 0.01;
 		RayHit newhit = traceGeometry(ray);
@@ -473,6 +473,14 @@ RayHit traceMirror(Ray ray) {
 		vec4 col2 = hit.albedoSpecular;
 		hit = newhit;
 		hit.albedoSpecular = vec4(col1.rgb * col2.rgb, hit.albedoSpecular.w);
+	}
+
+	RayHit shadowHit = create_ray_hit();
+	Ray shadowRay = create_ray(hit.pos, normalize(vec3(0.5, 1, 1)));
+	shadowRay.pos += hit.normal * 0.01;
+	shadowHit = traceGeometry(shadowRay);
+	if (shadowHit.hit) {
+		hit.albedoSpecular.rgb *= 0.5;
 	}
 	return hit;
 }
