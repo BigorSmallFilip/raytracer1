@@ -93,7 +93,7 @@ public:
 		up      = up      * viewMatrix - glm::vec4(m_position, 0);
 		forward = forward * viewMatrix - glm::vec4(m_position, 0);
 
-		constexpr float speed = 500.0f;
+		constexpr float speed = 20.0f;
 		if (inputsDown & INPUT_W)     m_position += forward * (speed * deltaTime);
 		if (inputsDown & INPUT_S)     m_position -= forward * (speed * deltaTime);
 		if (inputsDown & INPUT_D)     m_position += right   * (speed * deltaTime);
