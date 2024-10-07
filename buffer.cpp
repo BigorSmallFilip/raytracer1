@@ -54,9 +54,9 @@ void InitSphereData()
 			RandomRange(-40, 40)- 2900,
 			RandomRange(-40, 40),
 			RandomRange(0.5f, 5.0f),
-			RandomRange(0, 1),
-			RandomRange(0, 1),
-			RandomRange(0, 1),
+			RandomRange(0.5f, 1.0f),
+			RandomRange(0.5f, 1.0f),
+			RandomRange(0.5f, 1.0f),
 			1
 		};
 	}
