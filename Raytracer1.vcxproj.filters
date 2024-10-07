@@ -91,6 +91,9 @@
     <None Include="comp_tinydata.glsl">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="ringworldjoined_normals_struts.OBJ_MODEL">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="bits.txt">

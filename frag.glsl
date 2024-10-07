@@ -12,6 +12,7 @@ uniform sampler2D gDepth;
 uniform sampler2D testTexture;
 
 void main() {
+    vec2 uv = gl_FragCoord.xy / vec2(textureSize(gAlbedoSpecular, 0));
     vec4 albedoSpecular = texture(gAlbedoSpecular, TexCoords);
     vec3 albedo = albedoSpecular.rgb;
     float specular = albedoSpecular.a;
@@ -25,12 +26,21 @@ void main() {
     if (depth < 1000000000) {
         vec3 fogColor = vec3(0.6, 0.6, 1.0);
         float fogFactor = 1 - (40000 - depth) / (40000);
-        color = mix(color, fogColor, fogFactor);
+        //color = mix(color, fogColor, fogFactor);
+        color += fogColor * fogFactor;
     }
 
     //color = position / 3000;
     if (normal == vec3(0, 0, 0)) {
         color = albedo;
+    }
+
+    if (true) { // Vignette
+        uv *= 1 - uv.yx;
+        float vig = uv.x * uv.y * 15;
+        vig = pow(vig, 0.08);
+        color *= vig;
+        //color = vec3(vig);
     }
 
     FragColor = vec4(color, 0);

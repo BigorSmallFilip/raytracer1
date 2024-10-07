@@ -368,7 +368,7 @@ Model LoadModel(const char* const filepath)
 
 bool BuildAndDoEverythingElseWithBVH()
 {
-	Model testo = LoadModel("ringworldjoined_normals.OBJ_MODEL");
+	Model testo = LoadModel("ringworldjoined_normals_struts.OBJ_MODEL");
 	/*BoundingBox modelBounds{};
 	for (int i = 0; i < testo.triangles.size(); i++)
 	{

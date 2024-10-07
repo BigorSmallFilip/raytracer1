@@ -93,7 +93,7 @@ public:
 		up      = up      * viewMatrix - glm::vec4(m_position, 0);
 		forward = forward * viewMatrix - glm::vec4(m_position, 0);
 
-		constexpr float speed = 20.0f;
+		constexpr float speed = 500.0f;
 		if (inputsDown & INPUT_W)     m_position += forward * (speed * deltaTime);
 		if (inputsDown & INPUT_S)     m_position -= forward * (speed * deltaTime);
 		if (inputsDown & INPUT_D)     m_position += right   * (speed * deltaTime);
@@ -134,8 +134,8 @@ bool ProgramInit()
 
 	renderWidth = windowWidth;
 	renderHeight = windowHeight;
-	renderWidth = 1920 / 2;
-	renderHeight = 1080 / 2;
+	renderWidth = 1920 * 1;
+	renderHeight = 1080 * 1;
 	CreateTexture(gAlbedoSpecular, 0, GL_RGBA32F, GL_RGBA, GL_FLOAT);
 	CreateTexture(gPosition, 1, GL_RGBA32F, GL_RGBA, GL_FLOAT);
 	CreateTexture(gNormal, 2, GL_RGBA32F, GL_RGBA, GL_FLOAT);

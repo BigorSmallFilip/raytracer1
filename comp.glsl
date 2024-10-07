@@ -441,7 +441,12 @@ RayHit traceGeometry(Ray ray) {
 
 			float angle = atan(bestHit.pos.y / bestHit.pos.x) * 2800;
 			float mipmapLevel = log2(bestHit.dist) * 0.5 + (bestHit.dist / 500);
-			bestHit.albedoSpecular = vec4(textureLod(testTexture, vec2(bestHit.pos.z, angle) * 0.2, mipmapLevel).rgb, 0.1);
+			if (abs(bestHit.pos.z) < 134.9999) {
+				bestHit.albedoSpecular = vec4(textureLod(testTexture, vec2(bestHit.pos.z, angle) * 0.2, mipmapLevel).rgb, 0.1);
+			} else {
+				bestHit.albedoSpecular = vec4(1, 1, 1, 0);
+			}
+			
 			
 			/*const int boxMax = 200;
 			const int triMax = 20;
@@ -493,14 +498,43 @@ void main() {
 	vec2 normalizedScreenCoord = vec2(texelCoord) / vec2(imageSize(gAlbedoSpecular));
     vec2 uv = normalizedScreenCoord * 2 - 1;
 
-    Ray ray = create_camera_ray(uv);
-    RayHit rayhit = traceMirror(ray);
+	vec3 albedo = vec3(0);
+	float specular = 0;
+	vec3 position = vec3(0);
+	vec3 normal = vec3(0);
+	float depth = 0;
 
-	vec3 albedo = rayhit.albedoSpecular.rgb;
-	float specular = rayhit.albedoSpecular.a;
-	vec3 position = rayhit.pos;
-	vec3 normal = rayhit.normal;
-	float depth = rayhit.dist;
+	if (true) {
+		Ray ray = create_camera_ray(uv);
+		RayHit rayhit = traceMirror(ray);
+		albedo = rayhit.albedoSpecular.rgb;
+		specular = rayhit.albedoSpecular.a;
+		position = rayhit.pos;
+		normal = rayhit.normal;
+		depth = rayhit.dist;
+	} else {
+		for (int y = 0; y < 4; y++) {
+			for (int x = 0; x < 4; x++) {
+				vec2 ss_offset = vec2(x, y) * (1.0 / 4.0) - (3.0 / 4.0);
+				vec2 ss_uv = (vec2(texelCoord) + ss_offset) / vec2(imageSize(gAlbedoSpecular)) * 2 - 1;
+				Ray ray = create_camera_ray(ss_uv);
+				RayHit rayhit = traceMirror(ray);
+				
+				albedo += rayhit.albedoSpecular.rgb;
+				specular += rayhit.albedoSpecular.a;
+				position += rayhit.pos;
+				normal += rayhit.normal;
+				depth += rayhit.dist;
+			}
+		}
+		albedo /= 16;
+		specular /= 16;
+		position /= 16;
+		normal /= 16;
+		depth /= 16;
+	}
+
+	
 
 	//albedo = texture(testTexture, uv).rgb;
 	//albedo = imageLoad(testTexture, texelCoord).rgb;
