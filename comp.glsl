@@ -441,7 +441,7 @@ RayHit traceGeometry(Ray ray) {
 
 			float angle = atan(bestHit.pos.y / bestHit.pos.x) * 2800;
 			float mipmapLevel = log2(bestHit.dist) * 0.5 + (bestHit.dist / 500);
-			if (abs(bestHit.pos.z) < 134.9999) {
+			if (abs(bestHit.pos.z) < 134.999) {
 				bestHit.albedoSpecular = vec4(textureLod(testTexture, vec2(bestHit.pos.z, angle) * 0.2, mipmapLevel).rgb, 0.1);
 			} else {
 				bestHit.albedoSpecular = vec4(1, 1, 1, 0);
@@ -466,6 +466,10 @@ RayHit trace(Ray ray) {
 	return hit;
 }
 
+
+
+const vec3 directionalLight = normalize(vec3(-0.5, -1, -1));
+
 RayHit traceMirror(Ray ray) {
 	RayHit hit = create_ray_hit();
 	hit = traceGeometry(ray);
@@ -481,16 +485,25 @@ RayHit traceMirror(Ray ray) {
 	}
 
 	RayHit shadowHit = create_ray_hit();
-	Ray shadowRay = create_ray(hit.pos, normalize(vec3(0.5, 1, 1)));
+	Ray shadowRay = create_ray(hit.pos, -normalize(hit.pos));
 	shadowRay.pos += hit.normal * 0.005;
 	shadowHit = traceGeometry(shadowRay);
-	if (shadowHit.hit) {
-		hit.albedoSpecular.rgb *= 0.5;
+	float light = 1.0;
+	if (!shadowHit.hit || length(shadowHit.pos) > 500) {
+		light = 0.5;
+	} else {
+		// hit.albedoSpecular.rgb *= dot(hit.normal, normalize(hit.pos));
 	}
+	light *= dot(hit.normal, -normalize(hit.pos));
+	light = max(light, 0.25);
+	hit.albedoSpecular.rgb *= light;
 	return hit;
 }
 
 
+
+const int superSamplingX = 1;
+const int superSamplingY = 1;
 
 layout (local_size_x = 32, local_size_y = 30, local_size_z = 1) in;
 void main() {
@@ -513,9 +526,10 @@ void main() {
 		normal = rayhit.normal;
 		depth = rayhit.dist;
 	} else {
-		for (int y = 0; y < 4; y++) {
-			for (int x = 0; x < 4; x++) {
-				vec2 ss_offset = vec2(x, y) * (1.0 / 4.0) - (3.0 / 4.0);
+		for (int y = 0; y < superSamplingY; y++) {
+			for (int x = 0; x < superSamplingX; x++) {
+				vec2 ss_offset = vec2(x / float(superSamplingX), y / float(superSamplingY)) -
+					vec2((superSamplingX - 1) / (2 * superSamplingX), (superSamplingY - 1) / (2 * superSamplingY));
 				vec2 ss_uv = (vec2(texelCoord) + ss_offset) / vec2(imageSize(gAlbedoSpecular)) * 2 - 1;
 				Ray ray = create_camera_ray(ss_uv);
 				RayHit rayhit = traceMirror(ray);
@@ -527,11 +541,11 @@ void main() {
 				depth += rayhit.dist;
 			}
 		}
-		albedo /= 16;
-		specular /= 16;
-		position /= 16;
-		normal /= 16;
-		depth /= 16;
+		albedo *= 1.0 / float(superSamplingX * superSamplingY);
+		specular *= 1.0 / float(superSamplingX * superSamplingY);
+		position *= 1.0 / float(superSamplingX * superSamplingY);
+		normal *= 1.0 / float(superSamplingX * superSamplingY);
+		depth *= 1.0 / float(superSamplingX * superSamplingY);
 	}
 
 	

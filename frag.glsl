@@ -21,11 +21,12 @@ void main() {
     float depth = texture(gDepth, TexCoords).r;
 
     vec3 color = vec3(0);
-    color = albedo * dot(normal, -normalize(position));
-    
+    //color = albedo * dot(normal, -normalize(position));
+    color = albedo;
+
     if (depth < 1000000000) {
         vec3 fogColor = vec3(0.6, 0.6, 1.0);
-        float fogFactor = 1 - (40000 - depth) / (40000);
+        float fogFactor = 1 - (30000 - depth) / (30000);
         //color = mix(color, fogColor, fogFactor);
         color += fogColor * fogFactor;
     }
@@ -35,13 +36,15 @@ void main() {
         color = albedo;
     }
 
-    if (true) { // Vignette
+    if (false) { // Vignette
         uv *= 1 - uv.yx;
         float vig = uv.x * uv.y * 15;
-        vig = pow(vig, 0.08);
+        vig = pow(vig, 0.04);
         color *= vig;
         //color = vec3(vig);
     }
+
+    //color = vec3(depth / 500);
 
     FragColor = vec4(color, 0);
 }

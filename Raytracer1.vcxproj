@@ -169,6 +169,7 @@
     <None Include="comp_spheres.glsl" />
     <None Include="cube.OBJ_MODEL" />
     <None Include="frag.glsl" />
+    <None Include="ringworld2.OBJ_MODEL" />
     <None Include="ringworldjoined.OBJ_MODEL" />
     <None Include="ringworldjoined_normals.OBJ_MODEL" />
     <None Include="ringworldjoined_normals_struts.OBJ_MODEL" />
