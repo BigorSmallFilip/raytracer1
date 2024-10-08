@@ -137,8 +137,8 @@ bool ProgramInit()
 
 	renderWidth = windowWidth / 2;
 	renderHeight = windowHeight / 2;
-	//renderWidth = 1920 / 2;
-	//renderHeight = 1080 / 2;
+	//renderWidth = 1920 / 1;
+	//renderHeight = 1080 / 1;
 	CreateTexture(gAlbedoSpecular, 0, GL_RGBA32F, GL_RGBA, GL_FLOAT);
 	CreateTexture(gPosition, 1, GL_RGBA32F, GL_RGBA, GL_FLOAT);
 	CreateTexture(gNormal, 2, GL_RGBA32F, GL_RGBA, GL_FLOAT);

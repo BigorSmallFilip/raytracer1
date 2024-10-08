@@ -45,6 +45,7 @@ void main() {
     }
 
     //color = vec3(depth / 500);
+    //color = albedo;
 
     FragColor = vec4(color, 0);
 }

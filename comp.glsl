@@ -2,6 +2,13 @@
 
 
 
+// Settingsz
+const int superSamplingX = 1;
+const int superSamplingY = 1;
+const bool renderBoxAndTriTests = false;
+
+
+
 const float INFINITY = 1.0 / 0.0;
 const float PI = 3.14159265359;
 const float EPSILON = 0.000001;
@@ -448,13 +455,16 @@ RayHit traceGeometry(Ray ray) {
 			}
 			
 			
-			/*const int boxMax = 200;
-			const int triMax = 20;
-			bestHit.albedoSpecular = vec4(float(stats.x) / triMax, 0, float(stats.y) / boxMax, 1);
-			if (stats.x > triMax) bestHit.albedoSpecular = vec4(1, 0.75, 0.75, 1);
-			if (stats.y > boxMax) bestHit.albedoSpecular = vec4(0.75, 0.75, 1, 1);
-			if (stats.y > boxMax && stats.x > triMax) bestHit.albedoSpecular = vec4(0.25, 0, 0, 1);*/
-
+			if (renderBoxAndTriTests) {
+				const int boxMax = 200;
+				const int triMax = 20;
+				bestHit.albedoSpecular = vec4(float(stats.x) / triMax, 0, float(stats.y) / boxMax, 1);
+				if (stats.x > triMax) bestHit.albedoSpecular = vec4(1, 0.75, 0.75, 1);
+				if (stats.y > boxMax) bestHit.albedoSpecular = vec4(0.75, 0.75, 1, 1);
+				if (stats.y > boxMax && stats.x > triMax) bestHit.albedoSpecular = vec4(0.25, 0, 0, 1);
+				bestHit.hit = true;
+				bestHit.normal = vec3(0, 0, 0);
+			}
 		}
     }
 
@@ -502,9 +512,6 @@ RayHit traceMirror(Ray ray) {
 
 
 
-const int superSamplingX = 1;
-const int superSamplingY = 1;
-
 layout (local_size_x = 32, local_size_y = 30, local_size_z = 1) in;
 void main() {
 	ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
@@ -517,9 +524,14 @@ void main() {
 	vec3 normal = vec3(0);
 	float depth = 0;
 
-	if (true) {
+	if (superSamplingX <= 1 && superSamplingY <= 1) {
 		Ray ray = create_camera_ray(uv);
-		RayHit rayhit = traceMirror(ray);
+		RayHit rayhit;
+		if (!renderBoxAndTriTests) {
+			rayhit = traceMirror(ray);
+		} else {
+			rayhit = trace(ray);
+		}
 		albedo = rayhit.albedoSpecular.rgb;
 		specular = rayhit.albedoSpecular.a;
 		position = rayhit.pos;
