@@ -61,7 +61,7 @@ void InitSphereData()
 		};
 	}
 
-	CreateBufferAndCount("sphere_buffer", 4, 100, sizeof(spheres), &spheres);
+	CreateBufferAndCount("sphere_buffer", 4, 20, sizeof(spheres), &spheres);
 }
 
 

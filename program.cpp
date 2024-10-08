@@ -47,6 +47,7 @@ public:
 	glm::vec3 m_rotation;
 	float m_fovDegrees; // Horizontal fov
 	float m_aspectRatio; // Window width / Window height
+	float m_speed; // Movement speed
 
 	Camera()
 	{
@@ -54,6 +55,7 @@ public:
 		m_rotation = glm::vec3(0);
 		m_fovDegrees = 90.0f;
 		m_aspectRatio = 1.0f;
+		m_speed = 20.0f;
 	}
 
 	glm::mat4 GetViewMatrix()
@@ -93,13 +95,14 @@ public:
 		up      = up      * viewMatrix - glm::vec4(m_position, 0);
 		forward = forward * viewMatrix - glm::vec4(m_position, 0);
 
-		constexpr float speed = 200.0f;
-		if (inputsDown & INPUT_W)     m_position += forward * (speed * deltaTime);
-		if (inputsDown & INPUT_S)     m_position -= forward * (speed * deltaTime);
-		if (inputsDown & INPUT_D)     m_position += right   * (speed * deltaTime);
-		if (inputsDown & INPUT_A)     m_position -= right   * (speed * deltaTime);
-		if (inputsDown & INPUT_SPACE) m_position += up      * (speed * deltaTime);
-		if (inputsDown & INPUT_SHIFT) m_position -= up      * (speed * deltaTime);
+		if (inputsDown & INPUT_E)     m_speed *= 1.1f;
+		if (inputsDown & INPUT_Q)     m_speed /= 1.1f;
+		if (inputsDown & INPUT_W)     m_position += forward * (m_speed * deltaTime);
+		if (inputsDown & INPUT_S)     m_position -= forward * (m_speed * deltaTime);
+		if (inputsDown & INPUT_D)     m_position += right   * (m_speed * deltaTime);
+		if (inputsDown & INPUT_A)     m_position -= right   * (m_speed * deltaTime);
+		if (inputsDown & INPUT_SPACE) m_position += up      * (m_speed * deltaTime);
+		if (inputsDown & INPUT_SHIFT) m_position -= up      * (m_speed * deltaTime);
 	}
 
 private:
@@ -132,10 +135,10 @@ bool ProgramInit()
 
 	// Create the G-BUFFER oh yes
 
-	renderWidth = windowWidth;
-	renderHeight = windowHeight;
-	renderWidth = 1920 / 2;
-	renderHeight = 1080 / 2;
+	renderWidth = windowWidth / 2;
+	renderHeight = windowHeight / 2;
+	//renderWidth = 1920 / 2;
+	//renderHeight = 1080 / 2;
 	CreateTexture(gAlbedoSpecular, 0, GL_RGBA32F, GL_RGBA, GL_FLOAT);
 	CreateTexture(gPosition, 1, GL_RGBA32F, GL_RGBA, GL_FLOAT);
 	CreateTexture(gNormal, 2, GL_RGBA32F, GL_RGBA, GL_FLOAT);
